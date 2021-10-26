@@ -1,24 +1,19 @@
-console.log('werkt er eig iets');
-
-import Peer from '/peerjs';
-import * as socket from '/socket.io-client';
+const socket = io('/');
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
   host: '/',
-  port: '3001'
+  port: '9876'
 })
 
 const myVideo = document.createElement('video')
 myVideo.muted = true
 const peers = {}
-navigator.mediaDevices.getUserMedia({
-  video: true,
-  audio: false
-}).then(stream => {
-  addVideoStream(myVideo, stream)
 
+navigator.mediaDevices.getUserMedia({
+  video: true
+}).then(stream => {
+  addVideoStream(myVideo, stream);
   myPeer.on('call', call => {
-    console.log('help')
     call.answer(stream)
     const video = document.createElement('video')
     call.on('stream', userVideoStream => {
@@ -36,6 +31,7 @@ socket.on('user-disconnected', userId => {
 })
 
 myPeer.on('open', id => {
+  console.log(id);
   socket.emit('join-room', ROOM_ID, id)
 })
 
