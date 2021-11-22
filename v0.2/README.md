@@ -5,8 +5,8 @@
 - npm i -g nodemon
 - npm i -g peerjs
 
-## START PEER SERVER
-peerjs --port 9000
+## START APP
+npm run dev
 
 TODO:
 - static ip aan server geven
