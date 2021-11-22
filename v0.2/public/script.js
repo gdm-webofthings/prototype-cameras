@@ -1,9 +1,9 @@
-const socket = io('/');
+const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
 	host: '/',
 	secure: false,
-	debug: 3,
+	debug: 0,
 	port: '9000'
 })
 
@@ -14,7 +14,6 @@ const peers = {}
 navigator.mediaDevices.getUserMedia({
 	video: true
 }).then(stream => {
-	console.log('add stream');
 	addVideoStream(myVideo, stream);
 	myPeer.on('call', call => {
 		call.answer(stream)
@@ -22,11 +21,14 @@ navigator.mediaDevices.getUserMedia({
 		call.on('stream', userVideoStream => {
 			addVideoStream(video, userVideoStream)
 		})
-	})
+	});
 
 	socket.on('user-connected', userId => {
 		connectToNewUser(userId, stream)
-	})
+		// connectToNewUser() gets triggered before the user has finished the navigator promise.
+		// https://stackoverflow.com/questions/66937384/peer-oncalll-is-never-being-called
+		setTimeout(connectToNewUser,1000,userId,stream)
+	});
 })
 
 socket.on('user-disconnected', userId => {
@@ -37,7 +39,7 @@ myPeer.on('open', id => {
 	socket.emit('join-room', ROOM_ID, id);
 })
 
-function connectToNewUser(userId, stream) {
+const connectToNewUser = (userId, stream) => {
 	const call = myPeer.call(userId, stream)
 	const video = document.createElement('video')
 	call.on('stream', userVideoStream => {
@@ -50,7 +52,7 @@ function connectToNewUser(userId, stream) {
 	peers[userId] = call
 }
 
-function addVideoStream(video, stream) {
+const addVideoStream = (video, stream) => {
 	video.srcObject = stream
 	video.addEventListener('loadedmetadata', () => {
 		video.play()
